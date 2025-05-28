@@ -1,0 +1,100 @@
+<!-- dashboard.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+      <header>
+        <div class="container_1">
+            <div class="logo">
+                <img src="rinlproject.png" alt="">
+                <p> RINL Employee Verification Portal </p>
+            </div>
+            <div class="menu-button" onclick="togglemenu()">☰</div>
+            <div class="sec" id="navlinks">
+                <a href="sec1.html">Home</a>
+                <a href="#">About</a>
+                <a href="#">Help</a>
+                <a href="#">Ques</a>
+                <a href="#">Email</a>
+            </div>
+            <div class="signin">
+                    <button><a href="login2.html">log out</a></button>
+            </div>
+        </div>
+    </header>
+  <h2>Applicant List</h2>
+  <div id="applicantTable"></div>
+
+  <script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const res = await fetch("http://127.0.0.1:4000/admin/applicants");
+  const data = await res.json();
+  const tableDiv = document.getElementById("applicantTable");
+
+  if (!Array.isArray(data)) {
+    tableDiv.innerHTML = `<p>Error: ${data.error}</p>`;
+    return;
+  }
+
+  const table = document.createElement("table");
+  table.border = "1";
+  const header = table.insertRow();
+  const keys = ["name", "email", "phone", "status", "aadhaar", "pan", "resume", "certificate", "photo", "actions"];
+  keys.forEach(k => header.insertCell().innerText = k.charAt(0).toUpperCase() + k.slice(1));
+
+  data.forEach(app => {
+    const row = table.insertRow();
+    // Basic info
+    row.insertCell().innerText = app.name || "";
+    row.insertCell().innerText = app.email || "";
+    row.insertCell().innerText = app.phone || "";
+    row.insertCell().innerText = app.status || "pending";
+
+    // File links
+    const fileFields = ["aadhaar", "pan", "resume", "certificate", "photo"];
+    fileFields.forEach(field => {
+      const cell = row.insertCell();
+      if (app.files && app.files[field]) {
+        cell.innerHTML = `<a href="http://127.0.0.1:4000/admin/file/${app.files[field]}" target="_blank">View</a>`;
+      } else {
+        cell.innerText = "Not uploaded";
+      }
+    });
+
+    // Actions
+    const actionCell = row.insertCell();
+    const approveBtn = document.createElement("button");
+    approveBtn.innerText = "Approve";
+    approveBtn.onclick = () => updateStatus(app._id, "approved", row);
+
+    const rejectBtn = document.createElement("button");
+    rejectBtn.innerText = "Reject";
+    rejectBtn.onclick = () => updateStatus(app._id, "rejected", row);
+
+    actionCell.appendChild(approveBtn);
+    actionCell.appendChild(rejectBtn);
+  });
+
+  tableDiv.appendChild(table);
+
+  async function updateStatus(id, status, row) {
+    const res = await fetch("http://127.0.0.1:4000/admin/applicant/status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status })
+    });
+    const result = await res.json();
+    if (res.ok) {
+      row.cells[3].innerText = status; // Update status cell
+      alert("Status updated!");
+    } else {
+      alert(result.error || "Failed to update status");
+    }
+  }
+});
+  </script>
+</body>
+</html>
