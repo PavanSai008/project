@@ -78,7 +78,7 @@ This project is a web application for employee registration and document verific
 - If you see "Please register first to get your email linked," make sure you completed registration and your browser allows localStorage.
 - If you get MongoDB connection errors, ensure MongoDB is running on your machine.
 - For CORS issues, make sure you are running both frontend and backend on `localhost`.
-E8u8A3rI5oBVOyUO
+
 ---
 ## Project structure
 
